@@ -12,7 +12,7 @@ env:
   AWS_REGION: ap-south-1
   ECR_REPOSITORY: euron-backend
   ECS_CLUSTER: euron-prod-cluster
-  ECS_SERVICE: euron-backend-service
+  ECS_SERVICE: euron-backend-service-jjsn33dc   # ✅ FIXED
 
 jobs:
   build-and-deploy:
