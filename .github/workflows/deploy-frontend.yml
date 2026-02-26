@@ -17,7 +17,7 @@ env:
   AWS_REGION: ap-south-1
   ECR_REPOSITORY: euron-frontend
   ECS_CLUSTER: euron-prod-cluster
-  ECS_SERVICE: euron-frontend-service
+  ECS_SERVICE: euron-frontend-service-dail7b4v
 
 jobs:
   build-and-push:
