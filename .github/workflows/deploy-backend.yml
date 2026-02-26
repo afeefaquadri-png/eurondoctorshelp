@@ -15,14 +15,16 @@ env:
   ECS_SERVICE: euron-backend-service
 
 jobs:
-  build-and-push:
-    name: Build & Push Backend Image
+  build-and-deploy:
+    name: Build, Push & Deploy Backend
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # ✅ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -30,25 +32,51 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # ✅ Login to ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # ✅ Build & Push Docker image
       - name: Build, tag, and push image to ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
+          echo "Building Docker image..."
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
                        -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
                        ./backend
+
+          echo "Pushing Docker image..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      # ✅ DEBUG STEP (VERY IMPORTANT)
+      - name: Debug ECS Setup
+        run: |
+          echo "===== LIST CLUSTERS ====="
+          aws ecs list-clusters --region $AWS_REGION
+
+          echo "===== LIST SERVICES ====="
+          aws ecs list-services --cluster $ECS_CLUSTER --region $AWS_REGION
+
+          echo "===== DESCRIBE SERVICE ====="
+          aws ecs describe-services \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE \
+            --region $AWS_REGION || echo "Service not found!"
+
+      # ✅ Deploy (Force new deployment)
       - name: Force new ECS deployment
         run: |
+          echo "Deploying to ECS..."
+
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
             --force-new-deployment \
+            --region $AWS_REGION \
             --no-cli-pager
+
+          echo "Deployment triggered successfully 🚀"
