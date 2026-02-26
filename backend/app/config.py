@@ -3,7 +3,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    mongodb_uri: str = "mongodb+srv://afeefaquadri_:12345@cluster0.yqkhlxa.mongodb.net/?appName=Cluster0"
+    mongodb_uri: str = "mongodb+srv://afeefaquadri_:12345@cluster0.yqkhlxa.mongodb.net/euron_healthcare"
     openai_api_key: str = ""
     jwt_secret: str = "change-me-in-production"
     jwt_algorithm: str = "HS256"
